@@ -1,3 +1,4 @@
+#include "lights/light_ring.h"
 #include "lights/patterns/pulse_pattern.h"
 
 #define NUM_PULSE_FRAMES 120
