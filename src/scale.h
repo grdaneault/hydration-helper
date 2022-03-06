@@ -7,6 +7,8 @@
 #define SCALE_SCK_PIN 25
 #define SCALE_SAMPLE_BUFFER_SIZE 5
 
+#define SCALE_VALUE_CHANGING -999
+
 class Scale
 {
 public:

@@ -62,7 +62,7 @@ float Scale::current_value()
     float last_weight = calculate_weight(this->sample_buffer[this->current_sample], offset, scale);
 
     float delta = avg_weight - last_weight;
-    if (delta > 1 || delta < -1)
+    if (delta > 2 || delta < -2)
     {
         Serial.print("High delta: ");
         Serial.print(delta);
@@ -71,7 +71,7 @@ float Scale::current_value()
         Serial.print(", last: ");
         Serial.print(last_weight);
         Serial.println(")");
-        return 0;
+        return SCALE_VALUE_CHANGING;
     }
 
     return avg_weight;

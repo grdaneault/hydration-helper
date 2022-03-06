@@ -8,6 +8,7 @@ extern "C"
 
 #include "secrets.h"
 #include "service_instances.h"
+#include "scale.h"
 #include "mqtt_connection.h"
 #include "lights/pattern_manager.h"
 
@@ -50,6 +51,8 @@ void handle_wifi_event(WiFiEvent_t event)
         xTimerStop(mqttReconnectTimer, 0); // ensure we don't reconnect to MQTT while reconnecting to Wi-Fi
         xTimerStart(wifiReconnectTimer, 0);
         pattern_manager.set_pattern(PredefinedPatterns::PULSE_WHITE);
+        break;
+    default:
         break;
     }
 }
@@ -114,10 +117,15 @@ void initialize_network()
 }
 
 char buffer[10];
+char* changing = "changing";
 
 void send_weight(float weight)
 {
-    snprintf(buffer, 10, "%f", weight);
-    mqttClient.publish("hydration-helper/weight", 0, false, buffer);
-    // Serial.println("Sent weight via mqtt");
+    float isChanging = weight - SCALE_VALUE_CHANGING;
+    if (isChanging > -0.001 && isChanging < 0.001) {
+        mqttClient.publish("hydration-helper/weight", 0, false, changing);
+    } else {
+        snprintf(buffer, 10, "%f", weight);
+        mqttClient.publish("hydration-helper/weight", 0, false, buffer);
+    }
 }
