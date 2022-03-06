@@ -22,16 +22,16 @@ class DataHandler:
             self.handle_weight_changing_state()
 
         elif self.is_weight_same_as_last_value(value):
-            logger.debug(f"No change in weight ({self.last_value} -> {value})")
+            if self.is_changing and self.is_weight_empty(value):
+                self.handle_weight_empty()
+            else:
+                logger.debug(f"No change in weight ({self.last_value} -> {value})")
 
         elif self.is_weight_invalid(value):
             self.handle_weight_invalid()
 
         elif self.is_weight_empty(value):
-            logger.info("Weight Received: empty")
-            self.set_pattern(Patterns.OFF)
-            self.is_empty = True
-            self.is_changing = False
+            self.handle_weight_empty()
         else:
             self.handle_weight_occupied(value)
 
@@ -95,8 +95,10 @@ class DataHandler:
         return abs(value) < 2
 
     def handle_weight_empty(self):
-        self.is_empty = True
+        logger.info("Weight Received: empty")
         self.set_pattern(Patterns.OFF)
+        self.is_empty = True
+        self.is_changing = False
 
     def handle_weight_occupied(self, value):
         amount_drank = round(self.last_real_value - value, 2)
