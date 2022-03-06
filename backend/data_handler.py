@@ -15,27 +15,30 @@ class DataHandler:
         self.is_changing = False
         self.is_empty = False
 
-    def record_weight(self, value: float):
+    def record_weight(self, value: str):
         logger.debug(f"Got new weight: {value}")
-        value = round(value, 2)
+
         if self.is_weight_changing_state(value):
             self.handle_weight_changing_state()
+            return
 
-        elif self.is_weight_same_as_last_value(value):
-            if self.is_changing and self.is_weight_empty(value):
-                self.handle_weight_empty()
+        weight = round(float(value), 5)
+
+        if self.is_weight_same_as_last_value(weight):
+            if self.is_changing and self.is_weight_empty(weight):
+                self.handle_weight_empty(weight)
             else:
-                logger.debug(f"No change in weight ({self.last_value} -> {value})")
+                logger.debug(f"No change in weight ({self.last_value} -> {weight})")
 
-        elif self.is_weight_invalid(value):
+        elif self.is_weight_invalid(weight):
             self.handle_weight_invalid()
 
-        elif self.is_weight_empty(value):
-            self.handle_weight_empty()
+        elif self.is_weight_empty(weight):
+            self.handle_weight_empty(weight)
         else:
-            self.handle_weight_occupied(value)
+            self.handle_weight_occupied(weight)
 
-        self.last_value = value
+        self.last_value = weight
 
     @staticmethod
     def is_weight_changing_state(value):
@@ -44,7 +47,7 @@ class DataHandler:
         :param value: New value from the scale
         :return: True if the scale reports the current weight is changing, False otherwise
         """
-        return abs(value) < 0.0001
+        return value == "changing"
 
     def handle_weight_changing_state(self):
         """
@@ -94,8 +97,8 @@ class DataHandler:
         """
         return abs(value) < 2
 
-    def handle_weight_empty(self):
-        logger.info("Weight Received: empty")
+    def handle_weight_empty(self, weight):
+        logger.info(f"Weight Received: empty ({weight}")
         self.set_pattern(Patterns.OFF)
         self.is_empty = True
         self.is_changing = False
@@ -105,11 +108,11 @@ class DataHandler:
 
         if abs(amount_drank) < 2:
             # new value is basically the same as the old one, assume no drink
-            logger.info("Weight Received: same as last time")
+            logger.info(f"Weight Received: same as last time (new: {value}, last: {self.last_real_value})")
             self.set_pattern(Patterns.OFF)
         elif amount_drank > 0:
             # new value is less than old value - that means we drank!
-            logger.info(f"Weight Received: drank {amount_drank} grams!")
+            logger.info(f"Weight Received: drank {amount_drank} grams! (current: {value})")
             self.set_pattern(Patterns.PULSE_GREEN)
         else:
             # new value is more than old value - that means a refill!

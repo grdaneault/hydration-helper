@@ -22,7 +22,7 @@ def on_message(client: mqtt.Client, userdata, msg: mqtt.MQTTMessage):
     logger.debug(f"Topic {msg.topic}: {msg.payload}")
 
     if msg.topic == Config.MQTT_CHANNEL_WEIGHT:
-        data.record_weight(float(msg.payload))
+        data.record_weight(msg.payload.decode('ascii'))
 
 
 mqtt_client.on_connect = on_connect
