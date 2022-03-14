@@ -13,6 +13,15 @@ class Config:
     MQTT_CHANNEL_PATTERN = "hydration-helper/pattern"
     MQTT_CHANNEL_TARE = "hydration-helper/tare"
 
+    INFLUX_URL = "https://monitoring.home.greggernaut.com"
+    INFLUX_ORG = "greggernet"
+    INFLUX_TOKEN = os.getenv("INFLUX_TOKEN")
+
+    INFLUX_BUCKET_LT = "hydration"
+    INFLUX_BUCKET_ST = "hydration-short-term"
+    INFLUX_METRIC_DRANK = "hydration.drank"
+    INFLUX_METRIC_SCALE = "scale.weight"
+
 
 class Patterns:
     OFF = '0'

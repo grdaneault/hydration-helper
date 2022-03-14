@@ -1,5 +1,6 @@
 import logging.config
 import paho.mqtt.client as mqtt
+from influxdb_client import InfluxDBClient
 
 from config import Config
 from data_handler import DataHandler
@@ -9,7 +10,9 @@ logging.config.fileConfig('logging_config.ini', disable_existing_loggers=False)
 
 
 mqtt_client = mqtt.Client()
-data = DataHandler(mqtt_client)
+influx_client = InfluxDBClient(url=Config.INFLUX_URL, token=Config.INFLUX_TOKEN, org=Config.INFLUX_ORG)
+
+data = DataHandler(mqtt_client, influx_client)
 
 
 def on_connect(client: mqtt.Client, userdata, flags: dict, rc: int):

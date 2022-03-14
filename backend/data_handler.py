@@ -1,6 +1,9 @@
 import logging
+import time
 
 import paho.mqtt.client as mqtt
+from influxdb_client import InfluxDBClient, Point
+from influxdb_client.client.write_api import SYNCHRONOUS
 
 from config import Config, Patterns
 
@@ -8,21 +11,31 @@ logger = logging.getLogger(__name__)
 
 
 class DataHandler:
-    def __init__(self, mqtt_client: mqtt.Client):
+    def __init__(self, mqtt_client: mqtt.Client, influx_client: InfluxDBClient):
         self.mqtt_client = mqtt_client
+        self.influx_client = influx_client
+        self.influx_write_api = influx_client.write_api(write_options=SYNCHRONOUS)
+        self.influx_query_api = influx_client.query_api()
         self.last_value = float(-100)
         self.last_real_value = float(0)
         self.is_changing = False
         self.is_empty = False
 
+        self.current_effect = 0
+        self.last_effect_time = time.time()
+
     def record_weight(self, value: str):
         logger.debug(f"Got new weight: {value}")
+
+        if self.current_effect != Patterns.OFF and time.time() - self.last_effect_time > 5:
+            self.set_pattern(Patterns.OFF)
 
         if self.is_weight_changing_state(value):
             self.handle_weight_changing_state()
             return
 
-        weight = round(float(value), 5)
+        weight = round(float(value), 2)
+        self.publish_raw_weight_metric(weight)
 
         if self.is_weight_same_as_last_value(weight):
             if self.is_changing and self.is_weight_empty(weight):
@@ -95,10 +108,10 @@ class DataHandler:
         :param value: New value from the scale
         :return: True if the scale reports the scale is empty
         """
-        return abs(value) < 2
+        return abs(value) < 5
 
     def handle_weight_empty(self, weight):
-        logger.info(f"Weight Received: empty ({weight}")
+        logger.info(f"Weight Received: empty ({weight})")
         self.set_pattern(Patterns.OFF)
         self.is_empty = True
         self.is_changing = False
@@ -114,15 +127,41 @@ class DataHandler:
             # new value is less than old value - that means we drank!
             logger.info(f"Weight Received: drank {amount_drank} grams! (current: {value})")
             self.set_pattern(Patterns.PULSE_GREEN)
+            self.publish_clean_weight_metric(value, drank=amount_drank)
         else:
             # new value is more than old value - that means a refill!
             logger.info(f"Weight Received: refilled to {value} grams")
             self.set_pattern(Patterns.OFF)
+            self.publish_clean_weight_metric(value, refill=-amount_drank)
 
         self.last_real_value = value
         self.is_changing = False
         self.is_empty = False
 
+    def publish_raw_weight_metric(self, value):
+        point = Point(Config.INFLUX_METRIC_SCALE).field("weight", value)
+        try:
+            self.influx_write_api.write(bucket=Config.INFLUX_BUCKET_ST, record=point)
+        except Exception:
+            logger.exception("Error writing point to influx")
+
+    def publish_clean_weight_metric(self, value, drank=None, refill=None):
+
+        point = Point(Config.INFLUX_METRIC_DRANK).field("weight", value)
+
+        if drank is not None:
+            point = point.field("drank", drank)
+
+        if refill is not None:
+            point = point.field("refill", refill)
+
+        try:
+            self.influx_write_api.write(bucket=Config.INFLUX_BUCKET_LT, record=point)
+        except Exception:
+            logger.exception("Error writing point to influx")
+
     def set_pattern(self, new_pattern: str):
         logger.debug(f"Sending Message: set the pattern to {new_pattern}")
-        self.mqtt_client.publish(Config.MQTT_CHANNEL_PATTERN, payload=new_pattern, qos=0, retain=False)
+        self.mqtt_client.publish(Config.MQTT_CHANNEL_PATTERN, payload=new_pattern, qos=0, retain=True)
+        self.current_effect = new_pattern
+        self.last_effect_time = time.time()
