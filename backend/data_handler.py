@@ -162,6 +162,6 @@ class DataHandler:
 
     def set_pattern(self, new_pattern: str):
         logger.debug(f"Sending Message: set the pattern to {new_pattern}")
-        self.mqtt_client.publish(Config.MQTT_CHANNEL_PATTERN, payload=new_pattern, qos=0, retain=True)
+        self.mqtt_client.publish(Config.MQTT_CHANNEL_PATTERN, payload=new_pattern, qos=1, retain=True)
         self.current_effect = new_pattern
         self.last_effect_time = time.time()
