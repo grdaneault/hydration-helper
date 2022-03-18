@@ -9,6 +9,8 @@ from config import Config, Patterns
 
 logger = logging.getLogger(__name__)
 
+SECONDS_BEFORE_WARNING = 60 * 30
+
 
 class DataHandler:
     def __init__(self, mqtt_client: mqtt.Client, influx_client: InfluxDBClient):
@@ -23,10 +25,15 @@ class DataHandler:
 
         self.current_effect = 0
         self.last_effect_time = time.time()
+        self.drink_warning_count = 0
+        self.last_drink_time = time.time()
+        self.last_drink_warning_time = time.time()
 
     def record_weight(self, value: str):
         logger.debug(f"Got new weight: {value}")
 
+        if self.needs_hydration_reminder():
+            self.handle_hydration_reminder()
         if self.current_effect != Patterns.OFF and time.time() - self.last_effect_time > 5:
             self.set_pattern(Patterns.OFF)
 
@@ -73,11 +80,9 @@ class DataHandler:
 
         self.is_changing = True
         if self.is_empty:
-            logger.info(f"Weight Received: changing from empty to filled")
-            self.set_pattern(Patterns.PULSE_GREEN)
+            logger.debug(f"Weight Received: changing from empty to filled")
         else:
-            logger.info(f"Weight Received: changing from filled to empty")
-            self.set_pattern(Patterns.OFF)
+            logger.debug(f"Weight Received: changing from filled to empty")
 
     def is_weight_same_as_last_value(self, value):
         """
@@ -128,10 +133,12 @@ class DataHandler:
             logger.info(f"Weight Received: drank {amount_drank} grams! (current: {value})")
             self.set_pattern(Patterns.PULSE_GREEN)
             self.publish_clean_weight_metric(value, drank=amount_drank)
+            self.last_drink_time = time.time()
+            self.last_drink_warning_time = self.last_drink_time
         else:
             # new value is more than old value - that means a refill!
             logger.info(f"Weight Received: refilled to {value} grams")
-            self.set_pattern(Patterns.OFF)
+            self.set_pattern(Patterns.PULSE_BLUE)
             self.publish_clean_weight_metric(value, refill=-amount_drank)
 
         self.last_real_value = value
@@ -159,6 +166,17 @@ class DataHandler:
             self.influx_write_api.write(bucket=Config.INFLUX_BUCKET_LT, record=point)
         except Exception:
             logger.exception("Error writing point to influx")
+
+    def needs_hydration_reminder(self):
+        now = time.time()
+        return now - self.last_drink_warning_time > SECONDS_BEFORE_WARNING
+
+    def handle_hydration_reminder(self):
+        now = time.time()
+        logger.warning(f"No hydration in {round(now - self.last_drink_time, 0)} seconds. Sending warning {self.drink_warning_count}.")
+        self.set_pattern(Patterns.CYCLE_RED_ORANGE)
+        self.last_drink_warning_time = now
+        self.drink_warning_count += 1
 
     def set_pattern(self, new_pattern: str):
         logger.debug(f"Sending Message: set the pattern to {new_pattern}")
