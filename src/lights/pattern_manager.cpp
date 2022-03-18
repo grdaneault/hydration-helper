@@ -4,6 +4,11 @@
 #include "lights/patterns/rainbow_chase_pattern.h"
 #include "lights/patterns/color_cycle_pattern.h"
 
+
+#define HUE_GREEN 110
+#define HUE_LIME  80
+#define HUE_BLUE  150
+
 struct ColorPhase RED_ORANGE_FAST[] = {
     {CHSV(CHSV(0, 255, 255)), 10},
     {CHSV(CHSV(15, 255, 255)), 10},
@@ -12,17 +17,18 @@ struct ColorPhase RED_ORANGE_FAST[] = {
     {CHSV(CHSV(0, 255, 255)), 10},
     {CHSV(CHSV(0, 0, 0)), 100}};
 
+
 SolidLightPattern OFF_INST(CHSV(0, 0, 0));
 SolidLightPattern SOLID_WHITE_INST(CHSV(0, 0, 255));
 SolidLightPattern SOLID_RED_INST(CHSV(0, 255, 255));
-SolidLightPattern SOLID_GREEN_INST(CHSV(115, 255, 255));
-SolidLightPattern SOLID_LIME_INST(CHSV(90, 255, 255));
-SolidLightPattern SOLID_BLUE_INST(CHSV(180, 255, 255));
+SolidLightPattern SOLID_GREEN_INST(CHSV(HUE_GREEN, 255, 255));
+SolidLightPattern SOLID_LIME_INST(CHSV(HUE_LIME, 255, 255));
+SolidLightPattern SOLID_BLUE_INST(CHSV(HUE_BLUE, 255, 255));
 PulseLightPattern PULSE_WHITE_INST(CHSV(0, 0, 255));
 PulseLightPattern PULSE_RED_INST(CHSV(0, 255, 255));
-PulseLightPattern PULSE_GREEN_INST(CHSV(115, 255, 255));
-PulseLightPattern PULSE_LIME_INST(CHSV(90, 255, 255));
-PulseLightPattern PULSE_BLUE_INST(CHSV(180, 255, 255));
+PulseLightPattern PULSE_GREEN_INST(CHSV(HUE_GREEN, 255, 255));
+PulseLightPattern PULSE_LIME_INST(CHSV(HUE_LIME, 255, 255));
+PulseLightPattern PULSE_BLUE_INST(CHSV(HUE_BLUE, 255, 255));
 ColorCycleLightPattern CYCLE_RED_ORANGE_INST(RED_ORANGE_FAST, 6);
 RainbowChaseLightPattern RAINBOW_CHASE_INST;
 
