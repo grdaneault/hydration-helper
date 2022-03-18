@@ -2,15 +2,28 @@
 #include "lights/patterns/solid_pattern.h"
 #include "lights/patterns/pulse_pattern.h"
 #include "lights/patterns/rainbow_chase_pattern.h"
+#include "lights/patterns/color_cycle_pattern.h"
+
+struct ColorPhase RED_ORANGE_FAST[] = {
+    {CHSV(CHSV(0, 255, 255)), 10},
+    {CHSV(CHSV(15, 255, 255)), 10},
+    {CHSV(CHSV(0, 255, 255)), 10},
+    {CHSV(CHSV(15, 255, 255)), 10},
+    {CHSV(CHSV(0, 255, 255)), 10},
+    {CHSV(CHSV(0, 0, 0)), 100}};
 
 SolidLightPattern OFF_INST(CHSV(0, 0, 0));
 SolidLightPattern SOLID_WHITE_INST(CHSV(0, 0, 255));
 SolidLightPattern SOLID_RED_INST(CHSV(0, 255, 255));
 SolidLightPattern SOLID_GREEN_INST(CHSV(115, 255, 255));
 SolidLightPattern SOLID_LIME_INST(CHSV(90, 255, 255));
+SolidLightPattern SOLID_BLUE_INST(CHSV(180, 255, 255));
 PulseLightPattern PULSE_WHITE_INST(CHSV(0, 0, 255));
 PulseLightPattern PULSE_RED_INST(CHSV(0, 255, 255));
 PulseLightPattern PULSE_GREEN_INST(CHSV(115, 255, 255));
+PulseLightPattern PULSE_LIME_INST(CHSV(90, 255, 255));
+PulseLightPattern PULSE_BLUE_INST(CHSV(180, 255, 255));
+ColorCycleLightPattern CYCLE_RED_ORANGE_INST(RED_ORANGE_FAST, 6);
 RainbowChaseLightPattern RAINBOW_CHASE_INST;
 
 PatternManager::PatternManager(LightRing *ring)
@@ -23,9 +36,13 @@ PatternManager::PatternManager(LightRing *ring)
     this->patterns[PredefinedPatterns::SOLID_RED] = &SOLID_RED_INST;
     this->patterns[PredefinedPatterns::SOLID_GREEN] = &SOLID_GREEN_INST;
     this->patterns[PredefinedPatterns::SOLID_LIME] = &SOLID_LIME_INST;
+    this->patterns[PredefinedPatterns::SOLID_BLUE] = &SOLID_BLUE_INST;
     this->patterns[PredefinedPatterns::PULSE_WHITE] = &PULSE_WHITE_INST;
     this->patterns[PredefinedPatterns::PULSE_RED] = &PULSE_RED_INST;
     this->patterns[PredefinedPatterns::PULSE_GREEN] = &PULSE_GREEN_INST;
+    this->patterns[PredefinedPatterns::PULSE_LIME] = &PULSE_LIME_INST;
+    this->patterns[PredefinedPatterns::PULSE_BLUE] = &PULSE_BLUE_INST;
+    this->patterns[PredefinedPatterns::CYCLE_RED_ORANGE] = &CYCLE_RED_ORANGE_INST;
     this->patterns[PredefinedPatterns::RAINBOW_CHASE] = &RAINBOW_CHASE_INST;
 }
 

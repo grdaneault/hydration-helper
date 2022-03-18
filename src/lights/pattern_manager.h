@@ -4,7 +4,7 @@
 #include "lights/light_ring.h"
 #include "lights/patterns/light_pattern.h"
 
-#define NUM_PATTERNS 9
+#define NUM_PATTERNS 13
 
 enum PredefinedPatterns
 {
@@ -13,9 +13,13 @@ enum PredefinedPatterns
     SOLID_RED,
     SOLID_GREEN,
     SOLID_LIME,
+    SOLID_BLUE,
     PULSE_WHITE,
     PULSE_RED,
     PULSE_GREEN,
+    PULSE_LIME,
+    PULSE_BLUE,
+    CYCLE_RED_ORANGE,
     RAINBOW_CHASE
 };
 

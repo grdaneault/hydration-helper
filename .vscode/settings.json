@@ -1,6 +1,13 @@
 {
     "files.associations": {
         "*.tcc": "cpp",
-        "new": "cpp"
+        "new": "cpp",
+        "vector": "cpp",
+        "functional": "cpp",
+        "random": "cpp",
+        "fstream": "cpp",
+        "system_error": "cpp",
+        "type_traits": "cpp",
+        "tuple": "cpp"
     }
 }
