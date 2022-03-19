@@ -9,3 +9,4 @@ secrets.h
 *.iml
 .idea/
 venv/
+__pycache__/
