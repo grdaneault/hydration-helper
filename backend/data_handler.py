@@ -90,7 +90,7 @@ class DataHandler:
         :param value: New value from the scale
         :return: True if the scale reports the same value as last time (within 1 gram)
         """
-        return abs(value - self.last_value) < 1
+        return abs(value - self.last_value) < 2
 
     @staticmethod
     def is_weight_invalid(value):
@@ -135,6 +135,7 @@ class DataHandler:
             self.publish_clean_weight_metric(value, drank=amount_drank)
             self.last_drink_time = time.time()
             self.last_drink_warning_time = self.last_drink_time
+            self.drink_warning_count = 0
         else:
             # new value is more than old value - that means a refill!
             logger.info(f"Weight Received: refilled to {value} grams")
@@ -179,7 +180,7 @@ class DataHandler:
         self.drink_warning_count += 1
 
     def set_pattern(self, new_pattern: str):
-        logger.debug(f"Sending Message: set the pattern to {new_pattern}")
+        logger.info(f"Sending Message: set the pattern to {new_pattern}")
         self.mqtt_client.publish(Config.MQTT_CHANNEL_PATTERN, payload=new_pattern, qos=1, retain=True)
         self.current_effect = new_pattern
         self.last_effect_time = time.time()
