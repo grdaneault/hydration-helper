@@ -3,6 +3,7 @@ Non-blocking LED animations: solid, pulse (blue/green/red with level), sparkle, 
 One step() per call; no sleep. Uses a precomputed pulse brightness table (120 frames).
 Animations are configurable structs: PulseAnimation, SparkleAnimation, SolidAnimation, BlankAnimation.
 """
+import math
 
 # 120-frame pulse (same shape as C pulse_pattern.cpp): ramp up, hold, ramp down
 PULSE_TABLE = [
@@ -75,8 +76,30 @@ class PulseAnimation:
         return frame < NUM_PULSE_FRAMES * self.pulse_count
 
 
+def _lerp_rgb(color1, color2, t):
+    """Blend color1 and color2; t in 0..1."""
+    return (
+        int(color1[0] + (color2[0] - color1[0]) * t),
+        int(color1[1] + (color2[1] - color1[1]) * t),
+        int(color1[2] + (color2[2] - color1[2]) * t),
+    )
+
+
+def _pixel_phase(i, frame, speed_scale=0.018):
+    """
+    Deterministic phase 0..1 for pixel i at frame, with per-pixel speed and offset.
+    Speed and offset derived from index so each pixel fades at a different rate.
+    """
+    # Per-pixel speed in a range (e.g. 0.2–1.0) so some pixels cycle slower
+    speed = 0.2 + 0.8 * ((i * 7919 + 1) % 1000) / 1000
+    # Per-pixel offset so they don't all start in sync
+    offset = ((i * 1237) % 1000) / 1000
+    phase = (frame * speed * speed_scale + offset) % 1.0
+    return phase
+
+
 class SparkleAnimation:
-    """Sparkle: two colors alternating, duration in seconds."""
+    """Sparkle: pixels smoothly fade between two colors at different rates. Duration in seconds."""
 
     def __init__(self, color1, color2, duration):
         self.color1 = color1
@@ -93,25 +116,23 @@ class SparkleAnimation:
         )
 
     def animate(self, frame, num_pixels, pixels):
+        total_frames = int(self.duration * FPS)
+        fade_frames = max(1, int(total_frames * 0.15))  # 15% of duration for fade in/out
+        if frame < fade_frames:
+            brightness = frame / fade_frames
+        elif frame >= total_frames - fade_frames:
+            brightness = (total_frames - frame) / fade_frames
+        else:
+            brightness = 1.0
 
-        sparkle_index = frame % 4
-        dim = _scale_brightness(
-            (
-                (self.color1[0] + self.color2[0]) // 2,
-                (self.color1[1] + self.color2[1]) // 2,
-                (self.color1[2] + self.color2[2]) // 2,
-            ),
-            0.15,
-        )
         for i in range(num_pixels):
-            if (i + sparkle_index) % 4 == 0:
-                pixels[i] = self.color1
-            elif (i + sparkle_index) % 4 == 2:
-                pixels[i] = self.color2
-            else:
-                pixels[i] = dim
+            phase = _pixel_phase(i, frame)
+            # Smooth 0→1→0 over one cycle (sine)
+            t = (math.sin(phase * 2 * math.pi) + 1) / 2
+            color = _lerp_rgb(self.color1, self.color2, t)
+            pixels[i] = _scale_brightness(color, brightness)
         pixels.show()
-        return frame < int(self.duration * FPS)
+        return frame < total_frames
 
 
 
