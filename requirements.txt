@@ -1,0 +1,4 @@
+circuitpython-stubs==10.0.3
+adafruit-circuitpython-neopixel
+adafruit-circuitpython-led-animation
+cedargrove-nau7802
