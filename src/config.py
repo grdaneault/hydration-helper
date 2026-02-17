@@ -4,10 +4,10 @@
 NEAR_ZERO_G = 5
 
 # Reminders: first red pulse after no consumption (minutes)
-REMINDER_FIRST_MIN = 20
+REMINDER_FIRST_MIN = 15
 
 # Reminders: interval between subsequent red pulses (minutes)
-REMINDER_INTERVAL_MIN = 5
+REMINDER_INTERVAL_MIN = 2
 
 # Idle: stop reminder animations after no consumption and scale empty (minutes)
 IDLE_AFTER_MIN = 60

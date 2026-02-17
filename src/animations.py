@@ -21,6 +21,7 @@ FPS = 60  # used to convert sparkle duration (seconds) to frames
 COLOR_BLUE = (0, 0, 255)
 COLOR_GREEN = (0, 255, 0)
 COLOR_RED = (255, 0, 0)
+COLOR_YELLOW = (255, 255, 0)
 COLOR_OFF = (0, 0, 0)
 
 
@@ -143,12 +144,15 @@ SOLID_RED = SolidAnimation(COLOR_RED)
 GREEN_PULSE = PulseAnimation(COLOR_GREEN, 1, 1.0)
 BLUE_PULSE = PulseAnimation(COLOR_BLUE, 1, 1.0)
 LIGHT_BLUE_PULSE = PulseAnimation(COLOR_BLUE, 1, 0.25)
+SPARKLE = SparkleAnimation(COLOR_GREEN, COLOR_BLUE, 3)
+SPARKLE_RED = SparkleAnimation(COLOR_RED, COLOR_YELLOW, 3)
+
 RED_PULSE_1 = PulseAnimation(COLOR_RED, 1, 0.25)
 RED_PULSE_2 = PulseAnimation(COLOR_RED, 1, 0.5)
 RED_PULSE_3 = PulseAnimation(COLOR_RED, 1, 0.75)
 RED_PULSE_4 = PulseAnimation(COLOR_RED, 1, 1.0)
-RED_PULSE_LEVELS = (RED_PULSE_1, RED_PULSE_2, RED_PULSE_3, RED_PULSE_4)
-SPARKLE = SparkleAnimation(COLOR_GREEN, COLOR_BLUE, 3)
+RED_PULSE_LEVELS = (SPARKLE_RED, RED_PULSE_1, RED_PULSE_2, RED_PULSE_3, RED_PULSE_4)
+
 BLANK = None
 
 
