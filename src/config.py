@@ -4,16 +4,13 @@
 NEAR_ZERO_G = 5
 
 # Reminders: first red pulse after no consumption (minutes)
-REMINDER_FIRST_MIN = 15
+FIRST_REMINDER_SEC = 15 * 60
 
 # Reminders: interval between subsequent red pulses (minutes)
-REMINDER_INTERVAL_MIN = 2
+REMINDER_INTERVAL_SEC = 2 * 60
 
 # Idle: stop reminder animations after no consumption and scale empty (minutes)
-IDLE_AFTER_MIN = 60
-
-# Reminders: max escalation level (brightness/duration cap)
-REMINDER_LEVEL_CAP = 5
+IDLE_AFTER_SEC = 60 * 60
 
 # Min weight change (grams) to treat as "bottle filled" or "drank" (hysteresis)
 GRAM_DELTA_HYSTERESIS = 5

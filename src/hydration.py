@@ -9,10 +9,9 @@ NS_PER_SEC = 1_000_000_000
 
 from config import (
     NEAR_ZERO_G,
-    REMINDER_FIRST_MIN,
-    REMINDER_INTERVAL_MIN,
-    IDLE_AFTER_MIN,
-    REMINDER_LEVEL_CAP,
+    FIRST_REMINDER_SEC,
+    REMINDER_INTERVAL_SEC,
+    IDLE_AFTER_SEC,
     GRAM_DELTA_HYSTERESIS,
     TARE_DELAY_SEC,
 )
@@ -24,9 +23,9 @@ from animations import (
 )
 
 # Convert minutes to nanoseconds for comparisons
-reminder_first_ns = REMINDER_FIRST_MIN * 60 * NS_PER_SEC
-reminder_interval_ns = REMINDER_INTERVAL_MIN * 60 * NS_PER_SEC
-idle_after_ns = IDLE_AFTER_MIN * 60 * NS_PER_SEC
+reminder_first_ns = FIRST_REMINDER_SEC * NS_PER_SEC
+reminder_interval_ns = REMINDER_INTERVAL_SEC * NS_PER_SEC
+idle_after_ns = IDLE_AFTER_SEC * NS_PER_SEC
 
 
 class HydrationState:
@@ -120,7 +119,7 @@ class HydrationState:
             return
 
         if self.last_reminder_time is None or now_ns - self.last_reminder_time >= reminder_interval_ns:
-            self.reminder_level = min(self.reminder_level + 1, REMINDER_LEVEL_CAP)
+            self.reminder_level = min(self.reminder_level + 1, len(RED_PULSE_LEVELS))
             self.last_reminder_time = now_ns
             idx = min(self.reminder_level - 1, len(RED_PULSE_LEVELS) - 1)
             self.animation_controller.set_animation(RED_PULSE_LEVELS[idx])

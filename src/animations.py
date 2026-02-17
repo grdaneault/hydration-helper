@@ -21,7 +21,7 @@ FPS = 60  # used to convert sparkle duration (seconds) to frames
 COLOR_BLUE = (0, 0, 255)
 COLOR_GREEN = (0, 255, 0)
 COLOR_RED = (255, 0, 0)
-COLOR_YELLOW = (255, 255, 0)
+COLOR_YELLOW = (255, 128, 0)
 COLOR_OFF = (0, 0, 0)
 
 
@@ -100,12 +100,13 @@ def _pixel_phase(i, frame, speed_scale=0.018):
 
 
 class SparkleAnimation:
-    """Sparkle: pixels smoothly fade between two colors at different rates. Duration in seconds."""
+    """Sparkle: pixels smoothly fade between two colors at different rates. Duration in seconds. max_brightness 0.0..1.0 caps overall brightness (e.g. for hydration warnings)."""
 
-    def __init__(self, color1, color2, duration):
+    def __init__(self, color1, color2, duration, max_brightness=1.0):
         self.color1 = color1
         self.color2 = color2
         self.duration = duration
+        self.max_brightness = max(0.0, min(1.0, max_brightness))
 
     def __eq__(self, other):
         if not isinstance(other, SparkleAnimation):
@@ -114,6 +115,7 @@ class SparkleAnimation:
                 self.color1 == other.color1
                 and self.color2 == other.color2
                 and self.duration == other.duration
+                and self.max_brightness == other.max_brightness
         )
 
     def animate(self, frame, num_pixels, pixels):
@@ -131,7 +133,7 @@ class SparkleAnimation:
             # Smooth 0→1→0 over one cycle (sine)
             t = (math.sin(phase * 2 * math.pi) + 1) / 2
             color = _lerp_rgb(self.color1, self.color2, t)
-            pixels[i] = _scale_brightness(color, brightness)
+            pixels[i] = _scale_brightness(color, brightness * self.max_brightness)
         pixels.show()
         return frame < total_frames
 
@@ -145,13 +147,11 @@ GREEN_PULSE = PulseAnimation(COLOR_GREEN, 1, 1.0)
 BLUE_PULSE = PulseAnimation(COLOR_BLUE, 1, 1.0)
 LIGHT_BLUE_PULSE = PulseAnimation(COLOR_BLUE, 1, 0.25)
 SPARKLE = SparkleAnimation(COLOR_GREEN, COLOR_BLUE, 3)
-SPARKLE_RED = SparkleAnimation(COLOR_RED, COLOR_YELLOW, 3)
+SPARKLE_RED_1 = SparkleAnimation(COLOR_RED, COLOR_YELLOW, 2, max_brightness=0.4)
+SPARKLE_RED_2 = SparkleAnimation(COLOR_RED, COLOR_YELLOW, 5, max_brightness=1)
 
-RED_PULSE_1 = PulseAnimation(COLOR_RED, 1, 0.25)
-RED_PULSE_2 = PulseAnimation(COLOR_RED, 1, 0.5)
-RED_PULSE_3 = PulseAnimation(COLOR_RED, 1, 0.75)
-RED_PULSE_4 = PulseAnimation(COLOR_RED, 1, 1.0)
-RED_PULSE_LEVELS = (SPARKLE_RED, RED_PULSE_1, RED_PULSE_2, RED_PULSE_3, RED_PULSE_4)
+RED_PULSE_3 = PulseAnimation(COLOR_RED, 5, 1)
+RED_PULSE_LEVELS = (SPARKLE_RED_1, SPARKLE_RED_2, RED_PULSE_3, SOLID_RED)
 
 BLANK = None
 
