@@ -21,9 +21,10 @@ GRAM_DELTA_HYSTERESIS = 5
 # Raw to grams: multiply NAU7802 raw reading by this
 RAW_TO_GRAM = 377 / 324400
 
-# Scale stability: number of raw readings to average before returning
-SCALE_STABILITY_SAMPLES = 10
-# Scale stability: max allowed range (max - min) of raw readings to consider stable
+# Scale stability: number of raw readings that must be within limit to consider stable; same window is averaged for the reported value
+SCALE_STABILITY_SAMPLES = 4
+
+# Scale stability: max allowed range (max - min) of those readings to consider stable
 SCALE_STABILITY_LIMIT_RAW = 500
 
 # NAU7802 I2C address

@@ -53,9 +53,9 @@ class ScaleNAU7802:
 
     def read_grams(self):
         """
-        Return weight in grams (integer) only when the last N raw readings
-        are stable (all within stability_limit_raw). Otherwise return None (non-blocking).
-        Uses a circular buffer (fixed size, no resizing).
+        Return weight in grams when the last SCALE_STABILITY_SAMPLES readings
+        are stable (range <= limit). Reported value is the mean of those same
+        samples. Otherwise returns None (non-blocking).
         """
         if not self.available():
             return None
