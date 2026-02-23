@@ -52,6 +52,7 @@ class HydrationState:
         self.pending_tare = False
         self.last_tare_time = None
         self.animation_controller = animation_controller
+        self.scale_has_seen_near_zero = False
 
     def update(self, weight_grams):
         """
@@ -66,6 +67,7 @@ class HydrationState:
 
         # Scale is empty
         if current_weight <= NEAR_ZERO_G:
+            self.scale_has_seen_near_zero = True
             if last_weight > NEAR_ZERO_G:
                 # Scale was not empty before, request tare
                 self.pending_tare = True
@@ -81,17 +83,18 @@ class HydrationState:
             self.last_water_weight = current_weight
             return self._maybe_reminder_or_idle(now_ns)
 
-        # Bottle filled: weight increased beyond previous
-        if current_weight >= self.last_water_weight + GRAM_DELTA_HYSTERESIS:
+        # Bottle filled: weight increased beyond previous (only after scale has read near zero)
+        if self.scale_has_seen_near_zero and current_weight >= self.last_water_weight + GRAM_DELTA_HYSTERESIS:
             self.last_water_weight = self.current_weight
             self.animation_controller.set_animation(LIGHT_BLUE_PULSE)
             self.last_activity_time = now_ns
             self.idle = False
             self._maybe_reminder_or_idle(now_ns)
+            self.scale_has_seen_near_zero = False
             return True
 
-        # Drank: weight between 0 and previous (and decreased)
-        if self.last_water_weight - self.current_weight > GRAM_DELTA_HYSTERESIS:
+        # Drank: weight between 0 and previous (and decreased); only after scale has read near zero
+        if self.scale_has_seen_near_zero and self.last_water_weight - self.current_weight > GRAM_DELTA_HYSTERESIS:
             drunk = self.last_water_weight - self.current_weight
             self.total_water_consumed += drunk
             self.last_water_weight = self.current_weight
@@ -100,6 +103,7 @@ class HydrationState:
             self.reminder_level = 0
             self.last_reminder_time = None
             self.idle = False
+            self.scale_has_seen_near_zero = False
             return True
 
         # No state change: maybe reminder or idle
