@@ -62,7 +62,7 @@ class ScaleNAU7802:
             return None
         try:
             raw = self.read_raw()
-        except IOError as e:
+        except OSError as e:
             print(f"Error reading from the scale: {e}")
             return None
         self._buffer[self._write_index] = raw
