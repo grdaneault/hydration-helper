@@ -1,7 +1,7 @@
 # Hydration helper configuration constants (tunable)
 
 # Scale: tare when weight <= this (grams)
-NEAR_ZERO_G = 5
+NEAR_ZERO_G = 15
 
 # Reminders: first red pulse after no consumption (minutes)
 FIRST_REMINDER_SEC = 15 * 60

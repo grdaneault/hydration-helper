@@ -60,7 +60,11 @@ class ScaleNAU7802:
         """
         if not self.available():
             return None
-        raw = self.read_raw()
+        try:
+            raw = self.read_raw()
+        except IOError as e:
+            print(f"Error reading from the scale: {e}")
+            return None
         self._buffer[self._write_index] = raw
         self._write_index = (self._write_index + 1) % SCALE_STABILITY_SAMPLES
         hi, lo, total = self._buffer[0], self._buffer[0], self._buffer[0]
