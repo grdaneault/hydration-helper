@@ -57,6 +57,7 @@ class HydrationState:
         """
         Run state machine on new weight reading (grams, integer).
         Sets current_animation and sets pending_tare when appropriate.
+        Returns True when a real state change was detected (fill, drink, tare, idle, reminder), False otherwise.
         """
         now_ns = time.monotonic_ns()
         current_weight = weight_grams
@@ -69,13 +70,16 @@ class HydrationState:
                 # Scale was not empty before, request tare
                 self.pending_tare = True
                 self.last_activity_time = now_ns
-            else:
-                # Scale was already empty, maybe send a hydration reminder
-                self._maybe_reminder_or_idle(now_ns)
-            return
+                return True
+            return self._maybe_reminder_or_idle(now_ns)
         else:
             self.pending_tare = False
             self.last_tare_time = None
+
+        # Drift correction: snap last_water_weight to current when within hysteresis so we don't show fill/drink on small drift
+        if abs(current_weight - self.last_water_weight) <= GRAM_DELTA_HYSTERESIS:
+            self.last_water_weight = current_weight
+            return self._maybe_reminder_or_idle(now_ns)
 
         # Bottle filled: weight increased beyond previous
         if current_weight >= self.last_water_weight + GRAM_DELTA_HYSTERESIS:
@@ -84,7 +88,7 @@ class HydrationState:
             self.last_activity_time = now_ns
             self.idle = False
             self._maybe_reminder_or_idle(now_ns)
-            return
+            return True
 
         # Drank: weight between 0 and previous (and decreased)
         if self.last_water_weight - self.current_weight > GRAM_DELTA_HYSTERESIS:
@@ -96,14 +100,15 @@ class HydrationState:
             self.reminder_level = 0
             self.last_reminder_time = None
             self.idle = False
-            return
+            return True
 
         # No state change: maybe reminder or idle
-        self._maybe_reminder_or_idle(now_ns)
+        return self._maybe_reminder_or_idle(now_ns)
 
     def _maybe_reminder_or_idle(self, now_ns):
+        """Returns True if a real state change occurred (idle or reminder), False otherwise."""
         if self.idle:
-            return
+            return False
 
         last = self.last_consumption_time or 0
         idle_ns = now_ns - last
@@ -112,17 +117,19 @@ class HydrationState:
             # Scale has been empty and inactive for too long, enter idle mode
             self.idle = True
             self.animation_controller.set_animation(None)
-            return
+            return True
 
         if idle_ns <= reminder_first_ns:
             # Not enough time has passed since last consumption, don't send a reminder
-            return
+            return False
 
         if self.last_reminder_time is None or now_ns - self.last_reminder_time >= reminder_interval_ns:
             self.reminder_level = min(self.reminder_level + 1, len(RED_PULSE_LEVELS))
             self.last_reminder_time = now_ns
             idx = min(self.reminder_level - 1, len(RED_PULSE_LEVELS) - 1)
             self.animation_controller.set_animation(RED_PULSE_LEVELS[idx])
+            return True
+        return False
 
     def should_tare(self):
         """True when we should call scale.tare() (weight was near zero and we haven't cleared it yet)."""

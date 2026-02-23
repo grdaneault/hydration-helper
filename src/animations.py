@@ -139,8 +139,6 @@ class SparkleAnimation:
 
 
 
-
-# --- Named animation constants (replicate existing behavior) ---
 SOLID_BLUE = SolidAnimation(COLOR_BLUE)
 SOLID_RED = SolidAnimation(COLOR_RED)
 GREEN_PULSE = PulseAnimation(COLOR_GREEN, 1, 1.0)
@@ -149,7 +147,6 @@ LIGHT_BLUE_PULSE = PulseAnimation(COLOR_BLUE, 1, 0.25)
 SPARKLE = SparkleAnimation(COLOR_GREEN, COLOR_BLUE, 3)
 SPARKLE_RED_1 = SparkleAnimation(COLOR_RED, COLOR_YELLOW, 2, max_brightness=0.4)
 SPARKLE_RED_2 = SparkleAnimation(COLOR_RED, COLOR_YELLOW, 5, max_brightness=1)
-
 RED_PULSE_3 = PulseAnimation(COLOR_RED, 5, 1)
 RED_PULSE_LEVELS = (SPARKLE_RED_1, SPARKLE_RED_2, RED_PULSE_3, SOLID_RED)
 

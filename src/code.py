@@ -54,17 +54,30 @@ anim.set_animation(GREEN_PULSE)
 while anim.step():
     time.sleep(1 / 60)
 
-last = (-1, 0, 0, 0, False)
+def _elapsed_hhmmss_ns(ns):
+    """Convert monotonic nanoseconds to elapsed time string hh:mm:ss."""
+    s = ns // NS_PER_SEC
+    h, s = divmod(s, 3600)
+    m, s = divmod(s, 60)
+    return "{:02d}:{:02d}:{:02d}".format(h, m, s)
+
+
+
 last_anim = time.monotonic_ns()
+last_print_ns = time.monotonic_ns()
+print_interval_ns = 5 * 60 * NS_PER_SEC  # 5 minutes
 anim_interval_ns = NS_PER_SEC // 60
 while True:
     g = scale.read_grams()
     if g is not None:
-        hydration.update(g)
-        next = (g, hydration.current_weight, hydration.last_water_weight, hydration.total_water_consumed, hydration.pending_tare)
-        if next[0] != last[0] or next[1] != last[1] or next[2] != last[2] or next[3] != last[3] or next[4] != last[4]:
-            print(next)
-            last = next
+        state_changed = hydration.update(g)
+        next_ = (g, hydration.current_weight, hydration.last_water_weight, hydration.total_water_consumed, hydration.pending_tare)
+        now_ns = time.monotonic_ns()
+        should_print = state_changed or (now_ns - last_print_ns >= print_interval_ns)
+        if should_print:
+            last_print_ns = now_ns
+            ts = _elapsed_hhmmss_ns(now_ns)
+            print(f"[{ts}] current weight: {g}g, total consumed: {hydration.total_water_consumed}g last known weight: {hydration.last_water_weight}g")
 
     if hydration.should_tare():
         scale.tare()
